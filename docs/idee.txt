@@ -1,0 +1,5 @@
+Fourmiliere : 
+	GOAP(8)
+	Labyrinthe(6)
+	Agent autonome(4)
+Peut aussi faire labyrinthe du minotaure
