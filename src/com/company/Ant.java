@@ -20,6 +20,8 @@ public class Ant {
     public Ant(PApplet app) {
         this.app = app;
 
+        //At start, 0,0 is upper left
+
         position = new PVector(50, 50);
         width = 30;
         heigth = 30;
@@ -57,6 +59,23 @@ public class Ant {
             rightLeg.setFill(false);
             body.addChild(rightLeg);
         }
+
+        //At end, 0,0 is middle
+
+        position.x += width / 2;
+        position.y += heigth / 2;
+    }
+
+    public void move(float x, float y) {
+        body.translate(x, y);
+        position.x += x;
+        position.y += y;
+    }
+
+    public void moveTo(float x, float y) {
+        body.translate(x - position.x, y - position.y);
+        position.x = x;
+        position.y = y;
     }
 
     public void draw() {
