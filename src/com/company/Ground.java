@@ -21,7 +21,6 @@ public class Ground {
 
         float i = 0;
         for (i = 0; i <= app.width; i++) {
-
             shape.vertex(i, app.noise(i / 1000) * 250);
         }
         shape.vertex(app.width, app.height);

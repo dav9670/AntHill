@@ -11,9 +11,10 @@ public class Ant {
 
     private PApplet app;
 
+    public final static float WIDTH = 15;
+    public final static float HEIGHT = 15;
+
     private PVector position;
-    private float width;
-    private float heigth;
 
     private PShape body;
 
@@ -23,27 +24,25 @@ public class Ant {
         //At start, 0,0 is upper left
 
         position = new PVector(50, 50);
-        width = 30;
-        heigth = 30;
 
         body = app.createShape(PConstants.GROUP);
 
-        float headWidth = width / 3;
-        float headHeight = heigth / 3;
-        PShape head = app.createShape(ELLIPSE, position.x + (width / 2), position.y + headHeight / 2, headWidth, headHeight);
+        float headWidth = WIDTH / 3;
+        float headHeight = HEIGHT / 3;
+        PShape head = app.createShape(ELLIPSE, position.x + (WIDTH / 2), position.y + headHeight / 2, headWidth, headHeight);
         body.addChild(head);
 
-        float torsoWidth = width / 2;
-        float torsoHeight = heigth / 3 * 2;
-        PShape torso = app.createShape(ELLIPSE, position.x + (width / 2), position.y + headHeight + (torsoHeight / 2), torsoWidth, torsoHeight);
+        float torsoWidth = WIDTH / 2;
+        float torsoHeight = HEIGHT / 3 * 2;
+        PShape torso = app.createShape(ELLIPSE, position.x + (WIDTH / 2), position.y + headHeight + (torsoHeight / 2), torsoWidth, torsoHeight);
         body.addChild(torso);
 
         for (int i = 0; i < 2; i++) {
             PShape leftLeg = app.createShape();
             leftLeg.beginShape();
-            leftLeg.vertex(position.x + (width / 3), (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
-            leftLeg.vertex(position.x + (width / 3) - width / 6, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3) - torsoHeight / 3);
-            leftLeg.vertex(position.x + (width / 3) - width / 6 * 2, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
+            leftLeg.vertex(position.x + (WIDTH / 3), (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
+            leftLeg.vertex(position.x + (WIDTH / 3) - WIDTH / 6, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3) - torsoHeight / 3);
+            leftLeg.vertex(position.x + (WIDTH / 3) - WIDTH / 6 * 2, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
             leftLeg.endShape();
             leftLeg.setFill(false);
             body.addChild(leftLeg);
@@ -52,9 +51,9 @@ public class Ant {
         for (int i = 0; i < 2; i++) {
             PShape rightLeg = app.createShape();
             rightLeg.beginShape();
-            rightLeg.vertex(position.x + (width / 3 * 2), (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
-            rightLeg.vertex(position.x + (width / 3 * 2) + width / 6, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3) - torsoHeight / 3);
-            rightLeg.vertex(position.x + (width / 3 * 2) + width / 6 * 2, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
+            rightLeg.vertex(position.x + (WIDTH / 3 * 2), (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
+            rightLeg.vertex(position.x + (WIDTH / 3 * 2) + WIDTH / 6, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3) - torsoHeight / 3);
+            rightLeg.vertex(position.x + (WIDTH / 3 * 2) + WIDTH / 6 * 2, (i * torsoHeight / 2) + position.y + headHeight + (torsoHeight / 3));
             rightLeg.endShape();
             rightLeg.setFill(false);
             body.addChild(rightLeg);
@@ -62,8 +61,8 @@ public class Ant {
 
         //At end, 0,0 is middle
 
-        position.x += width / 2;
-        position.y += heigth / 2;
+        position.x += WIDTH / 2;
+        position.y += HEIGHT / 2;
     }
 
     public void move(float x, float y) {
