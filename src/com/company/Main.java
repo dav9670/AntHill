@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.Graph.Tunnel;
 import processing.core.PApplet;
 
 import java.awt.*;
@@ -15,6 +16,7 @@ public class Main extends PApplet {
     //TODO Make tree with nodes containing a boolean if theyre dug out, make tunnel from node to node 
 
     private Ground ground;
+    private Tunnel tunnel;
     private List<Ant> antList;
 
     @Override
@@ -28,6 +30,7 @@ public class Main extends PApplet {
     @Override
     public void setup() {
         ground = new Ground(this);
+        tunnel = new Tunnel(this, ground);
         antList.add(new Ant(this));
     }
 

@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.Graph.TunnelNode;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
@@ -17,6 +18,8 @@ public class Ant {
     private PVector position;
 
     private PShape body;
+
+    private TunnelNode target;
 
     public Ant(PApplet app) {
         this.app = app;
