@@ -1,10 +1,17 @@
 package com.company;
 
+import com.company.Graph.Tunnel;
 import com.company.Graph.TunnelNode;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static processing.core.PConstants.ELLIPSE;
 
@@ -13,19 +20,23 @@ public class Ant {
     private PApplet app;
 
     public final static float RADIUS = 15;
+    private float movementSpeed;
 
     private PVector position;
 
     private PShape body;
 
-    private TunnelNode target;
+    private TunnelNode currentNode;
+    private TunnelNode targetNode = null;
+    private List<TunnelNode> path = new ArrayList<>();
 
-    public Ant(PApplet app) {
+    public Ant(PApplet app, TunnelNode start) {
         this.app = app;
+        this.currentNode = start;
 
         //At start, 0,0 is upper left
 
-        position = new PVector(50, 50);
+        position = start.getPosition().copy();
 
         body = app.createShape(PConstants.GROUP);
 
@@ -65,18 +76,51 @@ public class Ant {
 
         position.x += RADIUS / 2;
         position.y += RADIUS / 2;
+
+        movementSpeed = app.random(RADIUS / 10, RADIUS / 7);
     }
 
-    public void move(float x, float y) {
-        body.translate(x, y);
-        position.x += x;
-        position.y += y;
+    public TunnelNode getCurrentNode() {
+        return currentNode;
     }
 
-    public void moveTo(float x, float y) {
-        body.translate(x - position.x, y - position.y);
-        position.x = x;
-        position.y = y;
+    public TunnelNode getTargetNode() {
+        return targetNode;
+    }
+
+    public void setGoal(Graph graph, TunnelNode target) {
+        DijkstraShortestPath shortestPath = new DijkstraShortestPath(graph);
+        path = new LinkedList<>(shortestPath.getPath(currentNode, target).getVertexList());
+        this.targetNode = path.get(0);
+    }
+
+    public void moveBy(PVector target) {
+        position.add(target);
+        body.translate(target.x, target.y);
+        app.translate(position.x, position.y);
+        //body.rotate(target.heading());
+        app.translate(-position.x, -position.y);
+    }
+
+    public void moveTo(PVector target) {
+        position = target.copy();
+        body.translate(target.x - position.x, target.x - position.y);
+    }
+
+    public void update(Tunnel tunnel) {
+        if (path.isEmpty()) {
+            setGoal(tunnel.getGraph(), tunnel.getRandomNode());
+        }
+
+        PVector movement = new PVector(targetNode.getPosition().x - position.x, targetNode.getPosition().y - position.y);
+        movement.setMag(movementSpeed);
+        moveBy(movement);
+
+        if (position.dist(targetNode.getPosition()) < RADIUS / 2) {
+            path.remove(currentNode);
+            currentNode = targetNode;
+            targetNode = path.isEmpty() ? null : path.get(0);
+        }
     }
 
     public void draw() {

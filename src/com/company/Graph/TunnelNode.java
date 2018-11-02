@@ -6,7 +6,6 @@ public class TunnelNode {
 
     public final NodeType nodeType;
     private PVector position;
-
     public TunnelNode(PVector position, NodeType nodeType) {
         this.position = position;
         this.nodeType = nodeType;
@@ -17,6 +16,7 @@ public class TunnelNode {
     }
 
     public enum NodeType {
+        ENTRY(75),
         POI(100),
         CROSSROAD(0),
         CHAMBER(150);

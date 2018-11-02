@@ -28,7 +28,6 @@ public class Ground {
         }
         shape.vertex(app.width, app.height);
         shape.vertex(0, app.height);
-        shape.vertex(0, app.noise(0));
         shape.endShape();
 
         shape.setFill(Color.ORANGE.getRGB());

@@ -4,8 +4,11 @@ import com.company.Ground;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import processing.core.PApplet;
+import processing.core.PShape;
 import processing.core.PVector;
 
+import java.awt.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Tunnel {
@@ -20,7 +23,7 @@ public class Tunnel {
         //TODO Make sure nodes are spaced enough
         int nbEntries = (int) app.random(1, 3);
         for (int i = 0; i < nbEntries; i++) {
-            TunnelNode entry = new TunnelNode(ground.getShape().getVertex((int) app.random(0, app.width)), TunnelNode.NodeType.POI);
+            TunnelNode entry = new TunnelNode(ground.getShape().getVertex((int) app.random(0, app.width)), TunnelNode.NodeType.ENTRY);
             graph.addVertex(entry);
         }
 
@@ -38,7 +41,7 @@ public class Tunnel {
             boolean hasEdge = false;
             TunnelNode closestNode = null;
             for (TunnelNode neighbor : graph.vertexSet().parallelStream().filter(x -> !x.equals(node)).collect(Collectors.toList())) {
-                if (!graph.containsEdge(node, neighbor)) {
+                if (!graph.containsEdge(node, neighbor) && !(node.nodeType == TunnelNode.NodeType.ENTRY && neighbor.nodeType == TunnelNode.NodeType.ENTRY)) {
                     double distance = node.getPosition().dist(neighbor.getPosition());
                     if (closestNode == null || distance < node.getPosition().dist(closestNode.getPosition())) {
                         closestNode = neighbor;
@@ -64,7 +67,31 @@ public class Tunnel {
         //TODO Generate crossroad nodes on overlapping paths
     }
 
+    public Graph<TunnelNode, TunnelEdge> getGraph() {
+        return graph;
+    }
+
+    public TunnelNode getRandomNode() {
+        return (TunnelNode) graph.vertexSet().toArray()[(int) app.random(0, graph.vertexSet().size())];
+    }
+
+    public TunnelNode getRandomEntryNode() {
+        List<TunnelNode> entryList = graph.vertexSet().stream().filter(node -> node.nodeType == TunnelNode.NodeType.ENTRY).collect(Collectors.toList());
+        return entryList.get((int) app.random(0, entryList.size()));
+    }
+
     public void draw() {
         //TODO For all nodes inside graph, draw paths between them if dugOut is true
+        PShape shape = app.createShape();
+        shape.beginShape();
+        for (TunnelEdge edge : graph.edgeSet()) {
+            shape.vertex(graph.getEdgeSource(edge).getPosition().x, graph.getEdgeSource(edge).getPosition().y);
+
+            shape.vertex(graph.getEdgeTarget(edge).getPosition().x, graph.getEdgeTarget(edge).getPosition().y);
+        }
+        shape.endShape();
+        shape.setStroke(Color.black.getRGB());
+        shape.setFill(/*Color.orange.darker().getRGB()*/ false);
+        app.shape(shape);
     }
 }

@@ -75,7 +75,6 @@ class GrassBlade {
         app.fill(color.getRGB());
         app.stroke(color.getRGB());
 
-        //Taller blades have larger width
         int h = segments.size() - 1;
 
         //Draw segments, reducing width depending on height
@@ -83,6 +82,8 @@ class GrassBlade {
         for (int x = 0; x <= h; x++) {
             float segmentx = segments.get(x).x;
             float segmenty = segments.get(x).y;
+
+            //Taller blades have larger width
             app.vertex(segmentx + (h * RATIO - x), segmenty);
             app.vertex(segmentx - (h * RATIO - x), segmenty);
         }

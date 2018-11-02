@@ -33,7 +33,11 @@ public class Main extends PApplet {
     public void setup() {
         ground = new Ground(this);
         tunnel = new Tunnel(this, ground);
-        antList.add(new Ant(this));
+        int nbAnts = (int) random(1, 5);
+
+        for (int i = 0; i < nbAnts; i++) {
+            antList.add(new Ant(this, tunnel.getRandomEntryNode()));
+        }
 
         int nbGrass = (int) random(50 / Constants.ratio, 150 / Constants.ratio);
         for (int i = 0; i < nbGrass; i++) {
@@ -44,7 +48,9 @@ public class Main extends PApplet {
     }
 
     public void update() {
-        antList.get(0).moveTo(mouseX, mouseY);
+        for (Ant ant : antList) {
+            ant.update(tunnel);
+        }
 
         for (GrassBlade b : grassBladeList) {
             b.update();
@@ -62,6 +68,8 @@ public class Main extends PApplet {
         }
 
         ground.draw();
+
+        tunnel.draw();
 
         for (Ant ant : antList) {
             ant.draw();
