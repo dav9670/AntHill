@@ -61,8 +61,6 @@ public class Tunnel {
 
         //TODO Make paths with perlin noise
 
-        System.out.println("allo");
-
         //TODO Generate crossroad nodes on overlapping paths
     }
 
