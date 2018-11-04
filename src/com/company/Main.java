@@ -33,8 +33,8 @@ public class Main extends PApplet {
     public void setup() {
         ground = new Ground(this);
         tunnel = new Tunnel(this, ground);
-        int nbAnts = (int) random(1, 5);
 
+        int nbAnts = (int) random(1, 5);
         for (int i = 0; i < nbAnts; i++) {
             antList.add(new Ant(this, tunnel.getRandomEntryNode()));
         }

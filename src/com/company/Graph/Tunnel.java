@@ -4,7 +4,6 @@ import com.company.Ground;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import processing.core.PApplet;
-import processing.core.PShape;
 import processing.core.PVector;
 
 import java.awt.*;
@@ -38,7 +37,6 @@ public class Tunnel {
 
         //TODO Make connections between nodes : node needs to have atleast 1 tunnel leading to it (nearest other node), then link all the other nodes within as specific radius around the node to it
         for (TunnelNode node : graph.vertexSet()) {
-            boolean hasEdge = false;
             TunnelNode closestNode = null;
             for (TunnelNode neighbor : graph.vertexSet().parallelStream().filter(x -> !x.equals(node)).collect(Collectors.toList())) {
                 if (!graph.containsEdge(node, neighbor) && !(node.nodeType == TunnelNode.NodeType.ENTRY && neighbor.nodeType == TunnelNode.NodeType.ENTRY)) {
@@ -47,16 +45,16 @@ public class Tunnel {
                         closestNode = neighbor;
                     }
                     if (distance < node.nodeType.radius) {
-                        TunnelEdge tunnelEdge = new TunnelEdge(distance);
+                        TunnelEdge tunnelEdge = new TunnelEdge(node, neighbor);
                         graph.addEdge(node, neighbor, tunnelEdge);
                         graph.setEdgeWeight(tunnelEdge, distance);
-                        hasEdge = true;
                     }
                 }
             }
-            if (hasEdge == false) {
+            //If no edge was added after checking all other nodes, add the closest one
+            if (graph.edgeSet().stream().filter(tunnelEdgeP -> tunnelEdgeP.firstNode == node || tunnelEdgeP.secondNode == node).collect(Collectors.toList()).size() == 0) {
                 double distance = node.getPosition().dist(closestNode.getPosition());
-                TunnelEdge tunnelEdge = new TunnelEdge(distance);
+                TunnelEdge tunnelEdge = new TunnelEdge(node, closestNode);
                 graph.addEdge(node, closestNode, tunnelEdge);
                 graph.setEdgeWeight(tunnelEdge, distance);
             }
@@ -75,6 +73,11 @@ public class Tunnel {
         return (TunnelNode) graph.vertexSet().toArray()[(int) app.random(0, graph.vertexSet().size())];
     }
 
+    public TunnelNode getRandomNodeExcept(TunnelNode node) {
+        List<TunnelNode> nodeList = graph.vertexSet().stream().filter(nodeP -> nodeP != node).collect(Collectors.toList());
+        return nodeList.get((int) app.random(0, nodeList.size()));
+    }
+
     public TunnelNode getRandomEntryNode() {
         List<TunnelNode> entryList = graph.vertexSet().stream().filter(node -> node.nodeType == TunnelNode.NodeType.ENTRY).collect(Collectors.toList());
         return entryList.get((int) app.random(0, entryList.size()));
@@ -82,16 +85,9 @@ public class Tunnel {
 
     public void draw() {
         //TODO For all nodes inside graph, draw paths between them if dugOut is true
-        PShape shape = app.createShape();
-        shape.beginShape();
         for (TunnelEdge edge : graph.edgeSet()) {
-            shape.vertex(graph.getEdgeSource(edge).getPosition().x, graph.getEdgeSource(edge).getPosition().y);
-
-            shape.vertex(graph.getEdgeTarget(edge).getPosition().x, graph.getEdgeTarget(edge).getPosition().y);
+            app.stroke(Color.black.getRGB());
+            app.line(graph.getEdgeSource(edge).getPosition().x, graph.getEdgeSource(edge).getPosition().y, graph.getEdgeTarget(edge).getPosition().x, graph.getEdgeTarget(edge).getPosition().y);
         }
-        shape.endShape();
-        shape.setStroke(Color.black.getRGB());
-        shape.setFill(/*Color.orange.darker().getRGB()*/ false);
-        app.shape(shape);
     }
 }

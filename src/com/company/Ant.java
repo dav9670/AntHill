@@ -14,17 +14,19 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static processing.core.PConstants.ELLIPSE;
+import static processing.core.PConstants.TWO_PI;
 
 public class Ant {
 
     private PApplet app;
 
     public final static float RADIUS = 15;
-    private float movementSpeed;
-
-    private PVector position;
 
     private PShape body;
+
+    private PVector position;
+    private PVector velocity;
+    private float movementSpeed;
 
     private TunnelNode currentNode;
     private TunnelNode targetNode = null;
@@ -37,6 +39,7 @@ public class Ant {
         //At start, 0,0 is upper left
 
         position = start.getPosition().copy();
+        position.set(position.x - RADIUS / 2, position.y - RADIUS / 2);
 
         body = app.createShape(PConstants.GROUP);
 
@@ -77,7 +80,22 @@ public class Ant {
         position.x += RADIUS / 2;
         position.y += RADIUS / 2;
 
+        velocity = new PVector(0, 0);
+
         movementSpeed = app.random(RADIUS / 10, RADIUS / 7);
+    }
+
+    private void setVelocity(PVector newVelocity) {
+        body.translate(-position.x, -position.y);
+        float rotationAngle = 0;
+        if (velocity.mag() == 0)
+            rotationAngle = (float) (Math.atan2(newVelocity.y, newVelocity.x) - Math.atan2(-1, 0));
+        else
+            rotationAngle = (float) (Math.atan2(newVelocity.y, newVelocity.x) - Math.atan2(velocity.y, velocity.x));
+        rotationAngle += rotationAngle < 0 ? TWO_PI : 0;
+        body.rotate(rotationAngle);
+        body.translate(position.x, position.y);
+        velocity = newVelocity.copy();
     }
 
     public TunnelNode getCurrentNode() {
@@ -88,38 +106,39 @@ public class Ant {
         return targetNode;
     }
 
-    public void setGoal(Graph graph, TunnelNode target) {
+    private void setTargetNode(TunnelNode node) {
+        targetNode = node;
+        if (targetNode != null) {
+            PVector newVelocity = new PVector(targetNode.getPosition().x - position.x, targetNode.getPosition().y - position.y);
+            newVelocity.setMag(movementSpeed);
+            setVelocity(newVelocity);
+        }
+    }
+
+    private void setGoal(Graph graph, TunnelNode target) throws NullPointerException {
         DijkstraShortestPath shortestPath = new DijkstraShortestPath(graph);
         path = new LinkedList<>(shortestPath.getPath(currentNode, target).getVertexList());
-        this.targetNode = path.get(0);
+        setTargetNode(path.get(1));
     }
 
-    public void moveBy(PVector target) {
-        position.add(target);
-        body.translate(target.x, target.y);
-        app.translate(position.x, position.y);
-        //body.rotate(target.heading());
-        app.translate(-position.x, -position.y);
-    }
-
-    public void moveTo(PVector target) {
-        position = target.copy();
-        body.translate(target.x - position.x, target.x - position.y);
+    private void move() {
+        position.add(velocity);
+        body.translate(velocity.x, velocity.y);
     }
 
     public void update(Tunnel tunnel) {
-        if (path.isEmpty()) {
-            setGoal(tunnel.getGraph(), tunnel.getRandomNode());
-        }
+        try {
+            if (targetNode == null) {
+                setGoal(tunnel.getGraph(), tunnel.getRandomNodeExcept(currentNode));
+            }
 
-        PVector movement = new PVector(targetNode.getPosition().x - position.x, targetNode.getPosition().y - position.y);
-        movement.setMag(movementSpeed);
-        moveBy(movement);
-
-        if (position.dist(targetNode.getPosition()) < RADIUS / 2) {
-            path.remove(currentNode);
-            currentNode = targetNode;
-            targetNode = path.isEmpty() ? null : path.get(0);
+            if (position.dist(targetNode.getPosition()) < RADIUS / 5) {
+                currentNode = targetNode;
+                setTargetNode(path.indexOf(currentNode) != path.size() - 1 ? path.get(path.indexOf(currentNode) + 1) : null);
+            }
+            move();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
