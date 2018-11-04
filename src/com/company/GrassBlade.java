@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import static processing.core.PConstants.TRIANGLE_STRIP;
 
 class GrassBlade {
-    private final static float RATIO = Constants.ratio;
+    private final static float RATIO = Constants.RATIO;
     private final static float SEGMENT_LENGTH = 20 * RATIO;
     private PApplet app;
     private float offset;

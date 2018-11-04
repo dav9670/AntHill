@@ -9,6 +9,7 @@ import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class Ant {
     public final static float RADIUS = 15;
 
     private PShape body;
+    private Color fillColor;
 
     private PVector position;
     private PVector velocity;
@@ -32,8 +34,9 @@ public class Ant {
     private TunnelNode targetNode = null;
     private List<TunnelNode> path = new ArrayList<>();
 
-    public Ant(PApplet app, TunnelNode start) {
+    public Ant(PApplet app, Color fillColor, TunnelNode start) {
         this.app = app;
+        this.fillColor = fillColor;
         this.currentNode = start;
 
         //At start, 0,0 is upper left
@@ -46,11 +49,13 @@ public class Ant {
         float headWidth = RADIUS / 3;
         float headHeight = RADIUS / 3;
         PShape head = app.createShape(ELLIPSE, position.x + (RADIUS / 2), position.y + headHeight / 2, headWidth, headHeight);
+        head.setFill(fillColor.getRGB());
         body.addChild(head);
 
         float torsoWidth = RADIUS / 2;
         float torsoHeight = RADIUS / 3 * 2;
         PShape torso = app.createShape(ELLIPSE, position.x + (RADIUS / 2), position.y + headHeight + (torsoHeight / 2), torsoWidth, torsoHeight);
+        torso.setFill(fillColor.getRGB());
         body.addChild(torso);
 
         for (int i = 0; i < 2; i++) {
@@ -116,6 +121,9 @@ public class Ant {
     }
 
     private void setGoal(Graph graph, TunnelNode target) throws NullPointerException {
+        if (currentNode.getColor().equals(fillColor))
+            currentNode.setColor(Color.black);
+        target.setColor(fillColor);
         DijkstraShortestPath shortestPath = new DijkstraShortestPath(graph);
         path = new LinkedList<>(shortestPath.getPath(currentNode, target).getVertexList());
         setTargetNode(path.get(1));

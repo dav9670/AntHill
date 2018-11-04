@@ -1,5 +1,6 @@
 package com.company.Graph;
 
+import com.company.Constants;
 import com.company.Ground;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
@@ -7,6 +8,7 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,51 +20,92 @@ public class Tunnel {
         this.app = app;
         this.graph = new DefaultUndirectedWeightedGraph<>(TunnelEdge.class);
 
-        //Create entries of the tunnel matching with the ground height at a specific x
-        //TODO Make sure nodes are spaced enough
-        int nbEntries = (int) app.random(1, 3);
-        for (int i = 0; i < nbEntries; i++) {
-            TunnelNode entry = new TunnelNode(ground.getShape().getVertex((int) app.random(0, app.width)), TunnelNode.NodeType.ENTRY);
-            graph.addVertex(entry);
+        int nbColumns = (int) (app.width / app.random(50 / Constants.RATIO, 100 / Constants.RATIO));
+        int nbRows = (int) ((app.height - ground.getLowestPoint()) / app.random(50 / Constants.RATIO, 100 / Constants.RATIO));
+        float cellWidth = app.width / nbColumns;
+        float cellHeight = (app.height - ground.getLowestPoint()) / nbRows;
+
+        TunnelNode[][] grid = new TunnelNode[nbRows][nbColumns];
+        int[] nbNodes = new int[nbRows];
+
+        //Generate nodes for each row
+        for (int i = 0; i < grid.length; i++) {
+            nbNodes[i] = (int) app.random(1, grid[i].length + 1);
+            ArrayList<Integer> nodesIndexes = new ArrayList<>(nbNodes[i]);
+
+            for (int x = 0; x < nbNodes[i]; x++) {
+                int index = -1;
+                do {
+                    index = (int) app.random(0, grid[i].length);
+                } while (nodesIndexes.contains(index));
+                nodesIndexes.add(index);
+            }
+
+            for (int index : nodesIndexes) {
+                float startWidth = index * cellWidth;
+                float endWidth = startWidth + cellWidth;
+                float startHeight = i * cellHeight + ground.getLowestPoint();
+                float endHeight = startHeight + cellHeight;
+
+                float x = app.random(startWidth, endWidth);
+                float y = i == 0 ? ground.getShape().getVertex((int) x).y : app.random(startHeight, endHeight);
+
+                PVector nodePosition = new PVector(x, y);
+                grid[i][index] = new TunnelNode(nodePosition, i == 0 ? TunnelNode.NodeType.ENTRY : TunnelNode.NodeType.POI);
+                graph.addVertex(grid[i][index]);
+            }
         }
 
-        //Create underground nodes at random
-        //TODO Make sure nodes are spaced enough
-        int nbNodes = (int) app.random(5, 10);
-        for (int i = 0; i < nbNodes; i++) {
-            //Create node from x=0...width, y=ground_lowest_point...height
-            TunnelNode node = new TunnelNode(new PVector(app.random(0, app.width), app.random(Ground.LOWEST_POINT, app.height)), TunnelNode.NodeType.POI);
-            graph.addVertex(node);
-        }
-
-        //TODO Make connections between nodes : node needs to have atleast 1 tunnel leading to it (nearest other node), then link all the other nodes within as specific radius around the node to it
-        for (TunnelNode node : graph.vertexSet()) {
-            TunnelNode closestNode = null;
-            for (TunnelNode neighbor : graph.vertexSet().parallelStream().filter(x -> !x.equals(node)).collect(Collectors.toList())) {
-                if (!graph.containsEdge(node, neighbor) && !(node.nodeType == TunnelNode.NodeType.ENTRY && neighbor.nodeType == TunnelNode.NodeType.ENTRY)) {
-                    double distance = node.getPosition().dist(neighbor.getPosition());
-                    if (closestNode == null || distance < node.getPosition().dist(closestNode.getPosition())) {
-                        closestNode = neighbor;
+        //Generate connections between nodes of same level, except for entries
+        for (int i = 1; i < grid.length; i++) {
+            for (int x = 0; x < grid[i].length; x++) {
+                TunnelNode currentNode = grid[i][x];
+                if (currentNode != null) {
+                    TunnelNode nextNode = null;
+                    for (int j = x + 1; j < grid[i].length && nextNode == null; j++) {
+                        nextNode = grid[i][j];
                     }
-                    if (distance < node.nodeType.radius) {
-                        TunnelEdge tunnelEdge = new TunnelEdge(node, neighbor);
-                        graph.addEdge(node, neighbor, tunnelEdge);
-                        graph.setEdgeWeight(tunnelEdge, distance);
+                    if (nextNode != null) {
+                        TunnelEdge edge = new TunnelEdge(currentNode, nextNode);
+                        graph.addEdge(currentNode, nextNode, edge);
+                        graph.setEdgeWeight(edge, edge.getWeight());
                     }
                 }
             }
-            //If no edge was added after checking all other nodes, add the closest one
-            if (graph.edgeSet().stream().filter(tunnelEdgeP -> tunnelEdgeP.firstNode == node || tunnelEdgeP.secondNode == node).collect(Collectors.toList()).size() == 0) {
-                double distance = node.getPosition().dist(closestNode.getPosition());
-                TunnelEdge tunnelEdge = new TunnelEdge(node, closestNode);
-                graph.addEdge(node, closestNode, tunnelEdge);
-                graph.setEdgeWeight(tunnelEdge, distance);
-            }
         }
 
-        //TODO Make paths with perlin noise
+        //Generate connections between layers
+        //TODO Fix double connections for entries making nbConenctions +=2, so not all entries have paths
+        for (int i = 0; i < grid.length - 1; i++) {
+            int offset = 0;
+            float nbConnections = 0;
+            //While nbConnections is lower than : 100% if entries, 50% for rest
+            while (nbConnections < (i == 0 ? (float) (nbNodes[i]) : (float) (nbNodes[i]) / 2)) {
+                for (int x = 0; x < grid[i].length; x++) {
+                    TunnelNode node = grid[i][x];
+                    if (node != null) {
+                        //if entries and entry already has edge, skips
+                        if (i > 0 || (i == 0 && !(graph.edgeSet().stream().filter(tunnelEdge -> tunnelEdge.firstNode == node || tunnelEdge.secondNode == node).collect(Collectors.toList()).size() > 0))) {
+                            //Make connections with nodes, gradually farther (if 2 nodes are same distance, connect the 2)
+                            for (int j = 0; j < (offset == 0 ? 1 : 2); j++) {
+                                try {
+                                    TunnelNode bottomNode = grid[i + 1][j % 2 == 0 ? x - offset : x + offset];
+                                    if (bottomNode != null) {
+                                        TunnelEdge edge = new TunnelEdge(node, bottomNode);
+                                        graph.addEdge(node, bottomNode, edge);
+                                        graph.setEdgeWeight(edge, edge.getWeight());
+                                        nbConnections++;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException e) {
 
-        //TODO Generate crossroad nodes on overlapping paths
+                                }
+                            }
+                        }
+                    }
+                }
+                offset++;
+            }
+        }
     }
 
     public Graph<TunnelNode, TunnelEdge> getGraph() {
@@ -83,11 +126,27 @@ public class Tunnel {
         return entryList.get((int) app.random(0, entryList.size()));
     }
 
+    public int getNbNodes() {
+        return graph.vertexSet().size();
+    }
+
     public void draw() {
-        //TODO For all nodes inside graph, draw paths between them if dugOut is true
+
+        app.stroke(Color.BLACK.getRGB());
+        app.strokeWeight(1);
+
         for (TunnelEdge edge : graph.edgeSet()) {
-            app.stroke(Color.black.getRGB());
             app.line(graph.getEdgeSource(edge).getPosition().x, graph.getEdgeSource(edge).getPosition().y, graph.getEdgeTarget(edge).getPosition().x, graph.getEdgeTarget(edge).getPosition().y);
         }
+
+        app.strokeWeight(10);
+
+        for (TunnelNode node : graph.vertexSet()) {
+            app.stroke(node.getColor().getRGB());
+            app.point(node.getPosition().x, node.getPosition().y);
+        }
+
+        app.stroke(Color.BLACK.getRGB());
+        app.strokeWeight(1);
     }
 }

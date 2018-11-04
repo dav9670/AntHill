@@ -1,5 +1,6 @@
 package com.company;
 
 public class Constants {
-    public final static float ratio = Ant.RADIUS / 15;
+    //Multiply / divide by this number to stay at the same ration that the ant body
+    public final static float RATIO = Ant.RADIUS / 15;
 }

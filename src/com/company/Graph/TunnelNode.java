@@ -2,17 +2,31 @@ package com.company.Graph;
 
 import processing.core.PVector;
 
+import java.awt.*;
+
 public class TunnelNode {
 
-    public final NodeType nodeType;
     private PVector position;
+    public final NodeType nodeType;
+
+    private Color color;
+
     public TunnelNode(PVector position, NodeType nodeType) {
         this.position = position;
         this.nodeType = nodeType;
+        color = Color.black;
     }
 
     public PVector getPosition() {
         return position.copy();
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public enum NodeType {
