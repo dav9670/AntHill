@@ -1,9 +1,9 @@
 package com.company;
 
+import com.company.Graph.Djisktra.DjisktraPathFinder;
 import com.company.Graph.Tunnel;
 import com.company.Graph.TunnelNode;
 import org.jgrapht.Graph;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
@@ -11,7 +11,6 @@ import processing.core.PVector;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static processing.core.PConstants.ELLIPSE;
@@ -121,11 +120,11 @@ public class Ant {
     }
 
     private void setGoal(Graph graph, TunnelNode target) throws NullPointerException {
+        DjisktraPathFinder djisktraPathFinder = new DjisktraPathFinder(graph);
+        path = djisktraPathFinder.getShortestPath(currentNode, target);
         if (currentNode.getColor().equals(fillColor))
             currentNode.setColor(Color.black);
         target.setColor(fillColor);
-        DijkstraShortestPath shortestPath = new DijkstraShortestPath(graph);
-        path = new LinkedList<>(shortestPath.getPath(currentNode, target).getVertexList());
         setTargetNode(path.get(1));
     }
 

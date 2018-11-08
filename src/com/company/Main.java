@@ -23,7 +23,8 @@ public class Main extends PApplet {
     @Override
     public void settings() {
         super.settings();
-        size(800, 800, P2D);
+        fullScreen(P2D, 1);
+        //size(800, 800, P2D);
 
         antList = new ArrayList<>();
         grassBladeList = new ArrayList<>();
@@ -37,7 +38,7 @@ public class Main extends PApplet {
         int nbAnts = (int) random(tunnel.getNbNodes() / 25, tunnel.getNbNodes() / 10) + 1;
         for (int i = 0; i < nbAnts; i++) {
             Color color = null;
-            switch (i) {
+            switch (i % 9) {
                 case 0:
                     color = Color.CYAN;
                     break;
@@ -62,6 +63,7 @@ public class Main extends PApplet {
                 case 7:
                     color = Color.GRAY;
                     break;
+                case 8:
                 default:
                     color = Color.WHITE;
                     break;
@@ -69,7 +71,7 @@ public class Main extends PApplet {
             antList.add(new Ant(this, color, tunnel.getRandomEntryNode()));
         }
 
-        int nbGrass = (int) random(50 / Constants.RATIO, 150 / Constants.RATIO);
+        int nbGrass = (int) random(width / 30 / Constants.RATIO, width / 15 / Constants.RATIO);
         for (int i = 0; i < nbGrass; i++) {
             //Grass will be between 12 and 5 segments, averaging 8.5
             int nbSegments = (int) (Math.abs(randomGaussian() / 2) * 7 + 5);

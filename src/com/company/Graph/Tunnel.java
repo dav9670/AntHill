@@ -30,7 +30,7 @@ public class Tunnel {
 
         //Generate nodes for each row
         for (int i = 0; i < grid.length; i++) {
-            nbNodes[i] = (int) app.random(1, grid[i].length + 1);
+            nbNodes[i] = i == 0 ? ((int) app.random(1, 5)) : ((int) app.random(grid[i].length / 20, grid[i].length) + 1);
             ArrayList<Integer> nodesIndexes = new ArrayList<>(nbNodes[i]);
 
             for (int x = 0; x < nbNodes[i]; x++) {
@@ -87,6 +87,7 @@ public class Tunnel {
                         //if entries and entry already has edge, skips
                         if (i > 0 || (i == 0 && !(graph.edgeSet().stream().filter(tunnelEdge -> tunnelEdge.firstNode == node || tunnelEdge.secondNode == node).collect(Collectors.toList()).size() > 0))) {
                             //Make connections with nodes, gradually farther (if 2 nodes are same distance, connect the 2)
+                            int nbAlreadyConnected = 0;
                             for (int j = 0; j < (offset == 0 ? 1 : 2); j++) {
                                 try {
                                     TunnelNode bottomNode = grid[i + 1][j % 2 == 0 ? x - offset : x + offset];
@@ -94,7 +95,9 @@ public class Tunnel {
                                         TunnelEdge edge = new TunnelEdge(node, bottomNode);
                                         graph.addEdge(node, bottomNode, edge);
                                         graph.setEdgeWeight(edge, edge.getWeight());
-                                        nbConnections++;
+                                        //Fix so that entries nodes always have to be connected
+                                        nbConnections += i == 0 ? nbAlreadyConnected > 0 ? 0 : 1 : 1;
+                                        nbAlreadyConnected++;
                                     }
                                 } catch (ArrayIndexOutOfBoundsException e) {
 
