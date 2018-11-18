@@ -75,7 +75,6 @@ public class Tunnel {
         }
 
         //Generate connections between layers
-        //TODO Fix double connections for entries making nbConenctions +=2, so not all entries have paths
         for (int i = 0; i < grid.length - 1; i++) {
             int offset = 0;
             float nbConnections = 0;
@@ -139,9 +138,11 @@ public class Tunnel {
         app.strokeWeight(1);
 
         for (TunnelEdge edge : graph.edgeSet()) {
+            app.stroke(edge.getColor().getRGB());
             app.line(graph.getEdgeSource(edge).getPosition().x, graph.getEdgeSource(edge).getPosition().y, graph.getEdgeTarget(edge).getPosition().x, graph.getEdgeTarget(edge).getPosition().y);
         }
 
+        app.stroke(0);
         app.strokeWeight(10);
 
         for (TunnelNode node : graph.vertexSet()) {

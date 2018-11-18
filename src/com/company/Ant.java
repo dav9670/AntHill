@@ -1,7 +1,8 @@
 package com.company;
 
-import com.company.Graph.Djisktra.DjisktraPathFinder;
+import com.company.Graph.DijkstraAlgorithm;
 import com.company.Graph.Tunnel;
+import com.company.Graph.TunnelEdge;
 import com.company.Graph.TunnelNode;
 import org.jgrapht.Graph;
 import processing.core.PApplet;
@@ -29,14 +30,18 @@ public class Ant {
     private PVector velocity;
     private float movementSpeed;
 
+    private final boolean colorPath;
+
     private TunnelNode currentNode;
     private TunnelNode targetNode = null;
     private List<TunnelNode> path = new ArrayList<>();
 
-    public Ant(PApplet app, Color fillColor, TunnelNode start) {
+    public Ant(PApplet app, Color fillColor, TunnelNode start, boolean colorPath) {
         this.app = app;
         this.fillColor = fillColor;
         this.currentNode = start;
+        this.colorPath = colorPath;
+
 
         //At start, 0,0 is upper left
 
@@ -110,6 +115,14 @@ public class Ant {
         return targetNode;
     }
 
+    private void setCurrentNode(Graph graph, TunnelNode node) {
+        if (colorPath) {
+            TunnelEdge edge = (TunnelEdge) graph.getEdge(currentNode, targetNode);
+            edge.setColor(Color.BLACK);
+        }
+        currentNode = targetNode;
+    }
+
     private void setTargetNode(TunnelNode node) {
         targetNode = node;
         if (targetNode != null) {
@@ -120,8 +133,16 @@ public class Ant {
     }
 
     private void setGoal(Graph graph, TunnelNode target) throws NullPointerException {
-        DjisktraPathFinder djisktraPathFinder = new DjisktraPathFinder(graph);
-        path = djisktraPathFinder.getShortestPath(currentNode, target);
+        DijkstraAlgorithm dijkstraAlgorithm = new DijkstraAlgorithm(graph);
+        dijkstraAlgorithm.execute(currentNode);
+        path = dijkstraAlgorithm.getPath(target);
+        if (colorPath) {
+            for (int i = 0; i < path.size() - 1; i++) {
+                TunnelEdge edge = (TunnelEdge) graph.getEdge(path.get(i), path.get(i + 1));
+                edge.setColor(fillColor);
+            }
+        }
+
         if (currentNode.getColor().equals(fillColor))
             currentNode.setColor(Color.black);
         target.setColor(fillColor);
@@ -140,7 +161,7 @@ public class Ant {
             }
 
             if (position.dist(targetNode.getPosition()) < RADIUS / 5) {
-                currentNode = targetNode;
+                setCurrentNode(tunnel.getGraph(), targetNode);
                 setTargetNode(path.indexOf(currentNode) != path.size() - 1 ? path.get(path.indexOf(currentNode) + 1) : null);
             }
             move();

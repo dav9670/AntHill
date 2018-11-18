@@ -23,7 +23,7 @@ public class Main extends PApplet {
     @Override
     public void settings() {
         super.settings();
-        fullScreen(P2D, 1);
+        fullScreen(P2D, 2);
         //size(800, 800, P2D);
 
         antList = new ArrayList<>();
@@ -40,10 +40,10 @@ public class Main extends PApplet {
             Color color = null;
             switch (i % 9) {
                 case 0:
-                    color = Color.CYAN;
+                    color = Color.GREEN;
                     break;
                 case 1:
-                    color = Color.GREEN;
+                    color = Color.CYAN;
                     break;
                 case 2:
                     color = Color.MAGENTA;
@@ -68,7 +68,7 @@ public class Main extends PApplet {
                     color = Color.WHITE;
                     break;
             }
-            antList.add(new Ant(this, color, tunnel.getRandomEntryNode()));
+            antList.add(new Ant(this, color, tunnel.getRandomEntryNode(), i == 0));
         }
 
         int nbGrass = (int) random(width / 30 / Constants.RATIO, width / 15 / Constants.RATIO);
@@ -106,5 +106,9 @@ public class Main extends PApplet {
         for (Ant ant : antList) {
             ant.draw();
         }
+
+        fill(Color.BLACK.getRGB());
+        text("David Lafrenière", 0, 40);
+        textSize(26);
     }
 }
