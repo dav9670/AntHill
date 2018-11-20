@@ -6,8 +6,6 @@ import java.util.*;
 
 public class DijkstraAlgorithm {
 
-    private final List<TunnelNode> nodes;
-    private final List<TunnelEdge> TunnelEdges;
     private Set<TunnelNode> settledNodes;
     private Set<TunnelNode> unSettledNodes;
     private Map<TunnelNode, TunnelNode> predecessors;
@@ -16,10 +14,6 @@ public class DijkstraAlgorithm {
     private Graph graph;
 
     public DijkstraAlgorithm(Graph graph) {
-        // create a copy of the array so that we can operate on this array
-        this.nodes = new ArrayList<TunnelNode>(graph.vertexSet());
-        this.TunnelEdges = new ArrayList<TunnelEdge>(graph.edgeSet());
-
         this.graph = graph;
     }
 
