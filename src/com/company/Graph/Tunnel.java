@@ -5,6 +5,8 @@ import com.company.Ground;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PShape;
 import processing.core.PVector;
 
 import java.awt.*;
@@ -16,17 +18,23 @@ public class Tunnel {
     private PApplet app;
     private Graph<TunnelNode, TunnelEdge> graph;
 
-    public Tunnel(PApplet app, Ground ground) {
+    private PShape gridOutline;
+    private boolean showGrid;
+
+    public Tunnel(PApplet app, Ground ground, boolean _showGrid) {
         this.app = app;
+        this.showGrid = _showGrid;
         this.graph = new DefaultUndirectedWeightedGraph<>(TunnelEdge.class);
 
-        int nbColumns = (int) (app.width / app.random(50 / Constants.RATIO, 100 / Constants.RATIO));
-        int nbRows = (int) ((app.height - ground.getLowestPoint()) / app.random(50 / Constants.RATIO, 100 / Constants.RATIO));
-        float cellWidth = app.width / nbColumns;
-        float cellHeight = (app.height - ground.getLowestPoint()) / nbRows;
+        final int nbColumns = (int) (app.width / app.random(50 / Constants.RATIO, 100 / Constants.RATIO));
+        final int nbRows = (int) ((app.height - ground.getLowestPoint()) / app.random(50 / Constants.RATIO, 100 / Constants.RATIO));
+        final float cellWidth = app.width / nbColumns;
+        final float cellHeight = (app.height - ground.getLowestPoint()) / nbRows;
 
         TunnelNode[][] grid = new TunnelNode[nbRows][nbColumns];
         int[] nbNodes = new int[nbRows];
+
+        gridOutline = app.createShape(PConstants.GROUP);
 
         //Generate nodes for each row
         for (int i = 0; i < grid.length; i++) {
@@ -41,18 +49,28 @@ public class Tunnel {
                 nodesIndexes.add(index);
             }
 
-            for (int index : nodesIndexes) {
-                float startWidth = index * cellWidth;
+            for (int j = 0; j < grid[i].length; j++) {
+
+                float startWidth = j * cellWidth;
                 float endWidth = startWidth + cellWidth;
                 float startHeight = i * cellHeight + ground.getLowestPoint();
                 float endHeight = startHeight + cellHeight;
 
-                float x = app.random(startWidth, endWidth);
-                float y = i == 0 ? ground.getShape().getVertex((int) x).y : app.random(startHeight, endHeight);
+                if (i != 0) {
+                    PShape rect = app.createShape(PConstants.RECT, startWidth, startHeight, cellWidth, cellHeight);
+                    rect.setFill(false);
+                    rect.setStroke(Color.RED.getRGB());
+                    gridOutline.addChild(rect);
+                }
 
-                PVector nodePosition = new PVector(x, y);
-                grid[i][index] = new TunnelNode(nodePosition, i == 0 ? TunnelNode.NodeType.ENTRY : TunnelNode.NodeType.POI);
-                graph.addVertex(grid[i][index]);
+                if (nodesIndexes.contains(j)) {
+                    float x = app.random(startWidth, endWidth);
+                    float y = i == 0 ? ground.getShape().getVertex((int) x).y : app.random(startHeight, endHeight);
+
+                    PVector nodePosition = new PVector(x, y);
+                    grid[i][j] = new TunnelNode(nodePosition, i == 0 ? TunnelNode.NodeType.ENTRY : TunnelNode.NodeType.POI);
+                    graph.addVertex(grid[i][j]);
+                }
             }
         }
 
@@ -152,5 +170,9 @@ public class Tunnel {
 
         app.stroke(Color.BLACK.getRGB());
         app.strokeWeight(1);
+
+        if (showGrid) {
+            app.shape(gridOutline);
+        }
     }
 }

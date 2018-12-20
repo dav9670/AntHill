@@ -23,7 +23,7 @@ public class Main extends PApplet {
     @Override
     public void settings() {
         super.settings();
-        fullScreen(P2D, 2);
+        fullScreen(P2D, 3);
         //size(800, 800, P2D);
 
         antList = new ArrayList<>();
@@ -33,7 +33,7 @@ public class Main extends PApplet {
     @Override
     public void setup() {
         ground = new Ground(this);
-        tunnel = new Tunnel(this, ground);
+        tunnel = new Tunnel(this, ground, true);
 
         int nbAnts = (int) random(tunnel.getNbNodes() / 25, tunnel.getNbNodes() / 10) + 1;
         for (int i = 0; i < nbAnts; i++) {
