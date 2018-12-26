@@ -23,7 +23,7 @@ public class Main extends PApplet {
     @Override
     public void settings() {
         super.settings();
-        fullScreen(P2D, 3);
+        fullScreen(P2D, 1);
         //size(800, 800, P2D);
 
         antList = new ArrayList<>();
